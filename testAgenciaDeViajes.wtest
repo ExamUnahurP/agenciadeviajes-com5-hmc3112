@@ -1,0 +1,173 @@
+import agenciaDeViajes.*
+
+describe "Valor final de un pack" {
+  const coordinador = new Coordinador(viajesRealizados = 5, motivado = true, aniosExperiencia = 1, rol = guia)
+  const trasladoVigente = new Beneficio(tipo = "Traslados privados", costo = 100)
+  const salaVipVigente = new Beneficio(tipo = "Acceso a salas VIP", costo = 200)
+  const seguroNoVigente = new Beneficio(tipo = "Seguros adicionales", costo = 300, vigente = false)
+
+  test "un pack nacional sin beneficios vigentes devuelve el mismo precio base" {
+    const pack = new PackNacional(duracion = 5, precioBase = 1000, coordinador = coordinador,
+      beneficios = [seguroNoVigente], provincia = "Salta", actividades = ["Trekking"])
+    assert.equals(1000, pack.valorFinal())
+  }
+
+  test "un pack nacional con 2 beneficios vigentes suma sus costos al precio base" {
+    const pack = new PackNacional(duracion = 5, precioBase = 1000, coordinador = coordinador,
+      beneficios = [trasladoVigente, salaVipVigente, seguroNoVigente], provincia = "Salta", actividades = [])
+    assert.equals(1300, pack.valorFinal())
+  }
+
+  test "un pack internacional sin beneficios vigentes aplica el 20% de recargo" {
+    const pack = new PackInternacional(duracion = 5, precioBase = 1000, coordinador = coordinador,
+      beneficios = [seguroNoVigente], pais = "Italia", cantidadEscalas = 1, esLugarDeInteres = true)
+    assert.equals(1200, pack.valorFinal())
+  }
+
+  test "un pack internacional con beneficios vigentes aplica el 20% sobre el total" {
+    const pack = new PackInternacional(duracion = 5, precioBase = 1000, coordinador = coordinador,
+      beneficios = [trasladoVigente, salaVipVigente], pais = "Italia", cantidadEscalas = 1, esLugarDeInteres = true)
+    assert.equals(1560, pack.valorFinal())
+  }
+}
+
+describe "Coordinadores altamente calificados" {
+
+  test "un guía motivado con 21 viajes es altamente calificado" {
+    const coordinador = new Coordinador(viajesRealizados = 21, motivado = true, aniosExperiencia = 0, rol = guia)
+    assert.that(coordinador.altamenteCalificado())
+  }
+
+  test "un guía no motivado con 21 viajes no es altamente calificado" {
+    const coordinador = new Coordinador(viajesRealizados = 21, motivado = false, aniosExperiencia = 10, rol = guia)
+    assert.notThat(coordinador.altamenteCalificado())
+  }
+
+  test "un asistente logístico con menos de 3 años de experiencia no es calificado aunque tenga muchos viajes" {
+    const coordinador = new Coordinador(viajesRealizados = 100, motivado = true, aniosExperiencia = 2, rol = asistenteLogistico)
+    assert.notThat(coordinador.altamenteCalificado())
+  }
+
+  test "un asistente logístico con 3 años de experiencia y más de 20 viajes es calificado" {
+    const coordinador = new Coordinador(viajesRealizados = 21, motivado = false, aniosExperiencia = 3, rol = asistenteLogistico)
+    assert.that(coordinador.altamenteCalificado())
+  }
+
+  test "un acompañante con más de 20 viajes es siempre calificado" {
+    const coordinador = new Coordinador(viajesRealizados = 21, motivado = false, aniosExperiencia = 0, rol = acompaniante)
+    assert.that(coordinador.altamenteCalificado())
+  }
+
+  test "un acompañante con 20 viajes no es calificado" {
+    const coordinador = new Coordinador(viajesRealizados = 20, motivado = true, aniosExperiencia = 10, rol = acompaniante)
+    assert.notThat(coordinador.altamenteCalificado())
+  }
+
+  test "un coordinador puede cambiar de rol" {
+    const coordinador = new Coordinador(viajesRealizados = 21, motivado = false, aniosExperiencia = 0, rol = guia)
+    coordinador.rol(acompaniante)
+    assert.equals(acompaniante, coordinador.rol())
+    assert.that(coordinador.altamenteCalificado())
+  }
+
+  test "asignar un rol inválido lanza una excepción" {
+    const coordinador = new Coordinador(viajesRealizados = 21, motivado = false, aniosExperiencia = 0, rol = guia)
+    assert.throwsException({ coordinador.rol("piloto") })
+    assert.equals(guia, coordinador.rol())
+  }
+
+  test "crear un coordinador con un rol inválido lanza una excepción" {
+    assert.throwsException({ new Coordinador(viajesRealizados = 21, motivado = false, aniosExperiencia = 0, rol = "piloto") })
+  }
+}
+
+describe "Packs premium" {
+  const calificado = new Coordinador(viajesRealizados = 21, motivado = true, aniosExperiencia = 0, rol = guia)
+  const noCalificado = new Coordinador(viajesRealizados = 5, motivado = true, aniosExperiencia = 0, rol = guia)
+
+  test "un pack nacional de más de 10 días con coordinador altamente calificado es premium" {
+    const pack = new PackNacional(duracion = 11, precioBase = 1000, coordinador = calificado, provincia = "Jujuy")
+    assert.that(pack.esPremium())
+  }
+
+  test "un pack nacional de 10 días no es premium" {
+    const pack = new PackNacional(duracion = 10, precioBase = 1000, coordinador = calificado, provincia = "Jujuy")
+    assert.notThat(pack.esPremium())
+  }
+
+  test "un pack nacional con coordinador no calificado no es premium" {
+    const pack = new PackNacional(duracion = 15, precioBase = 1000, coordinador = noCalificado, provincia = "Jujuy")
+    assert.notThat(pack.esPremium())
+  }
+
+  test "un pack internacional de interés, de más de 20 días y sin escalas es premium" {
+    const pack = new PackInternacional(duracion = 21, precioBase = 1000, coordinador = noCalificado,
+      pais = "Japón", cantidadEscalas = 0, esLugarDeInteres = true)
+    assert.that(pack.esPremium())
+  }
+
+  test "un pack internacional que no es lugar de interés no es premium" {
+    const pack = new PackInternacional(duracion = 21, precioBase = 1000, coordinador = calificado,
+      pais = "Japón", cantidadEscalas = 0, esLugarDeInteres = false)
+    assert.notThat(pack.esPremium())
+  }
+
+  test "un pack internacional de 20 días no es premium" {
+    const pack = new PackInternacional(duracion = 20, precioBase = 1000, coordinador = calificado,
+      pais = "Japón", cantidadEscalas = 0, esLugarDeInteres = true)
+    assert.notThat(pack.esPremium())
+  }
+
+  test "un pack internacional con escalas no es premium" {
+    const pack = new PackInternacional(duracion = 21, precioBase = 1000, coordinador = calificado,
+      pais = "Japón", cantidadEscalas = 1, esLugarDeInteres = true)
+    assert.notThat(pack.esPremium())
+  }
+}
+
+describe "Packs provinciales" {
+  const calificado = new Coordinador(viajesRealizados = 21, motivado = true, aniosExperiencia = 0, rol = guia)
+  const actividades = ["Cabalgata", "Trekking", "Rafting", "Degustación"]
+  const beneficiosVigentes = [
+    new Beneficio(tipo = "Traslados privados", costo = 100),
+    new Beneficio(tipo = "Acceso a salas VIP", costo = 200),
+    new Beneficio(tipo = "Seguros adicionales", costo = 300)
+  ]
+
+  test "un pack provincial con 4 actividades, más de 5 ciudades y 3 beneficios vigentes es premium" {
+    const pack = new PackProvincial(duracion = 3, precioBase = 1000, coordinador = calificado, provincia = "Mendoza",
+      actividades = actividades, beneficios = beneficiosVigentes, cantidadCiudades = 6)
+    assert.that(pack.esPremium())
+  }
+
+  test "un pack provincial con menos de 4 actividades no es premium" {
+    const pack = new PackProvincial(duracion = 15, precioBase = 1000, coordinador = calificado, provincia = "Mendoza",
+      actividades = ["Cabalgata", "Trekking", "Rafting"], beneficios = beneficiosVigentes, cantidadCiudades = 6)
+    assert.notThat(pack.esPremium())
+  }
+
+  test "un pack provincial que visita 5 ciudades no es premium" {
+    const pack = new PackProvincial(duracion = 15, precioBase = 1000, coordinador = calificado, provincia = "Mendoza",
+      actividades = actividades, beneficios = beneficiosVigentes, cantidadCiudades = 5)
+    assert.notThat(pack.esPremium())
+  }
+
+  test "un pack provincial con menos de 3 beneficios vigentes no es premium" {
+    beneficiosVigentes.first().vigente(false)
+    const pack = new PackProvincial(duracion = 15, precioBase = 1000, coordinador = calificado, provincia = "Mendoza",
+      actividades = actividades, beneficios = beneficiosVigentes, cantidadCiudades = 6)
+    assert.notThat(pack.esPremium())
+  }
+
+  test "un pack provincial premium tiene un 5% de recargo en su precio final" {
+    const pack = new PackProvincial(duracion = 3, precioBase = 1000, coordinador = calificado, provincia = "Mendoza",
+      actividades = actividades, beneficios = beneficiosVigentes, cantidadCiudades = 6)
+    assert.equals(1680, pack.valorFinal())
+  }
+
+  test "un pack provincial no premium no tiene recargo en su precio final" {
+    const pack = new PackProvincial(duracion = 3, precioBase = 1000, coordinador = calificado, provincia = "Mendoza",
+      actividades = actividades, beneficios = beneficiosVigentes, cantidadCiudades = 2)
+    assert.equals(1600, pack.valorFinal())
+  }
+}
