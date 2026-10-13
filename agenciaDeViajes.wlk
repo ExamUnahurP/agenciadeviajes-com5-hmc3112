@@ -100,3 +100,27 @@ object asistenteLogistico {
 object acompaniante {
   method cumpleCondicion(coordinador) = true
 }
+
+
+
+
+
+
+
+
+
+
+
+
+object unObjeto {
+
+}
+
+
+
+
+
+
+
+
+
