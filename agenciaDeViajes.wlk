@@ -14,9 +14,9 @@ class Pack {
 
   method valorFinal() = self.subtotal() + self.recargo()
 
-  method recargo()
+  method recargo();
 
-  method esPremium()
+  method esPremium();
 }
 
 class PackNacional inherits Pack {
