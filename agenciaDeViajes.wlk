@@ -38,10 +38,6 @@ class PackInternacional inherits Pack {
   override method esPremium() = esLugarDeInteres && duracion > 20 && cantidadEscalas == 0
 }
 
-class Pais {
-  const esLugarDeInteres
-}
-
 class PackProvincial inherits PackNacional {
   const property cantidadCiudades
 
