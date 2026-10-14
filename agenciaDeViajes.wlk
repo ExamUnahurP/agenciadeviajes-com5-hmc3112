@@ -76,7 +76,7 @@ class Coordinador {
 
   method validarRol(unRol) {
     if (!roles.validos().contains(unRol)) {
-      self.error(message = "El rol asignado no es válido")
+      self.error("El rol asignado no es válido")
     }
   }
 
@@ -86,7 +86,11 @@ class Coordinador {
 // ============ Roles ============
 
 object roles {
-  method validos() = [guia, asistenteLogistico, acompaniante]
+  const rolesValidos = [guia,asistenteLogistico,acompaniante]
+  method validos() = rolesValidos
+  method agregarRol(unRol) {rolesValidos.add(unRol)}
+  method quitarRol(unRol) {rolesValidos.remove(unRol)}
+  
 }
 
 object guia {
