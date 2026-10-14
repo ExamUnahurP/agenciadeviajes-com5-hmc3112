@@ -90,7 +90,7 @@ object roles {
   method validos() = rolesValidos
   method agregarRol(unRol) {rolesValidos.add(unRol)}
   method quitarRol(unRol) {rolesValidos.remove(unRol)}
-  
+
 }
 
 object guia {
