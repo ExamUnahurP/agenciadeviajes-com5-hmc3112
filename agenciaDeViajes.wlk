@@ -14,9 +14,9 @@ class Pack {
 
   method valorFinal() = self.subtotal() + self.recargo()
 
-  method recargo();
+  method recargo()
 
-  method esPremium();
+  method esPremium()
 }
 
 class PackNacional inherits Pack {
@@ -76,7 +76,7 @@ class Coordinador {
 
   method validarRol(unRol) {
     if (!roles.validos().contains(unRol)) {
-      throw new DomainException(message = "El rol asignado no es válido")
+      self.error(message = "El rol asignado no es válido")
     }
   }
 
